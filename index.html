@@ -342,6 +342,8 @@ footer a:hover{color:var(--orange);border-bottom-color:var(--orange)}
             </select></div>
           <input type="hidden" name="phone" value="">
           <input type="hidden" name="website_url_backup" value="">
+          <div class="cf-turnstile" data-sitekey="0x4AAAAAAFf-i1bAO6-FhD6_" data-theme="dark" style="margin:0.75rem 0;"></div>
+          <p class="fine" id="formErr" style="display:none;color:#ff8a65">That didn't go through. Try again, or call or text (515) 344-4053.</p>
           <button type="submit" class="btn btn-p sub2" id="subBtn">Request my call &rarr;</button>
           <p class="fine">We'll use this to email your prep questions and follow up. Reply any time and say stop, and we'll leave you alone.</p>
         </form>
@@ -393,15 +395,24 @@ footer a:hover{color:var(--orange);border-bottom-color:var(--orange)}
     ev.preventDefault();
     var btn = document.getElementById('subBtn');
     btn.textContent = 'Sending...'; btn.disabled = true;
-    f.querySelector('[name=website_url_backup]').value = document.getElementById('f_site').value;
-    fetch(f.action, { method:'POST', body:new FormData(f) }).then(done).catch(done);
+    var err = document.getElementById('formErr'); err.style.display='none';
+    var tok = f.querySelector('[name="cf-turnstile-response"]');
+    if (!tok || !tok.value) { err.textContent='One sec, the spam check is still loading. Try again in a moment.'; err.style.display='block'; btn.textContent='Request my call \u2192'; btn.disabled=false; return; }
+    var body = new URLSearchParams(new FormData(f));
+    fetch(f.action, { method:'POST', mode:'no-cors', body:body }).then(done).catch(fail);
     function done(){
       document.getElementById('formWrap').style.display='none';
       document.getElementById('okMsg').style.display='block';
+    }
+    function fail(){
+      err.textContent="That didn't go through. Try again, or call or text (515) 344-4053."; err.style.display='block';
+      btn.textContent='Request my call \u2192'; btn.disabled=false;
+      if (window.turnstile) { try { turnstile.reset(); } catch(e){} }
     }
   });
 })();
 </script>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </body>
 </html>
