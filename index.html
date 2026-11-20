@@ -398,17 +398,10 @@ footer a:hover{color:var(--orange);border-bottom-color:var(--orange)}
     var err = document.getElementById('formErr'); err.style.display='none';
     var tok = f.querySelector('[name="cf-turnstile-response"]');
     if (!tok || !tok.value) { err.textContent='One sec, the spam check is still loading. Try again in a moment.'; err.style.display='block'; btn.textContent='Request my call \u2192'; btn.disabled=false; return; }
-    var body = new URLSearchParams(new FormData(f));
-    fetch(f.action, { method:'POST', mode:'no-cors', body:body }).then(done).catch(fail);
-    function done(){
-      document.getElementById('formWrap').style.display='none';
-      document.getElementById('okMsg').style.display='block';
-    }
-    function fail(){
-      err.textContent="That didn't go through. Try again, or call or text (515) 344-4053."; err.style.display='block';
-      btn.textContent='Request my call \u2192'; btn.disabled=false;
-      if (window.turnstile) { try { turnstile.reset(); } catch(e){} }
-    }
+    // Plain form post. Cross-site fetch can't read the responder's redirect and
+    // reports a false failure, so post natively like urbannicheco.com does.
+    // .submit() does not re-fire this listener.
+    f.submit();
   });
 })();
 </script>
